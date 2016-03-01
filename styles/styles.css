@@ -1,0 +1,74 @@
+body {
+  font-family: 'Open Sans';
+  top: 50%;
+  width: 60%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #474f6b;
+  font-weight: normal;
+}
+
+a {
+  color: black;
+  text-decoration: underline;
+}
+
+a#ghc span {
+  color: black;
+}
+
+nav#menu {
+  background-color: #F4F4F4;
+  bottom: 0;
+  padding-left: 15px;
+  padding-top: 5%;
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 35%;
+}
+
+nav#menu ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+nav#menu ul li {
+  margin: 0;
+  color: black;
+}
+
+nav#menu ul li:hover {
+  background-color: #29374E;
+  border-radius: 5px;
+  color: #FDFEFF;
+}
+
+nav#menu ul li a {
+  color: inherit;
+  display: block;
+  text-decoration: none;
+}
+
+nav#menu ul li a:hover {
+  padding: 5px;
+}
+
+ul#yesod-pros, ul#yesod-cons {
+  list-style-type: none;
+  margin-left: 0;
+  text-indent: -1em;
+  padding-left: 40;
+}
+
+ul#yesod-pros li:before {
+  content: '+';
+  font-weight: bold;
+  margin-right: 0.5em;
+}
+
+ul#yesod-cons li:before {
+  content: '- ';
+  font-weight: bold;
+}

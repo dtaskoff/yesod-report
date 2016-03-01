@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="description" content="Developing web applications with Yesod">
+    <meta name="keywords" content="Yesod,Haskell,Routing,Templates,Forms,Databases,Sessions">
+    <meta name="author" content="Daniel Taskoff">
+    <link rel="icon" href="img/icon.png" type="image/png">
+    <link rel="stylesheet" href="styles/styles.css" type="text/css">
+    <link rel="stylesheet" href="styles/github.css" type="text/css">
+    <title>Уеб приложения с Yesod</title>
+  </head>
+  <body>
+    <header>
+      <h1><img src="img/yesod-logo.png" alt="yesod's logo">
+        Уеб приложения с Yesod</h1>
+      <blockquote>
+        <p>"Yesod is a Haskell web framework for productive development of type-safe,
+            RESTful, high performance web applications."</p>
+        - <cite><a href="www.yesodweb.com">Yesod Web Framework's team</a></cite>
+      </blockquote>
+    </header>
+
+    <nav id="menu">
+      <h2>Теми</h2>
+      <ul>
+        <li><a href="#">Начало</a></li>
+        <li><a href="#what-is-yesod?">Какво е Yesod?</a></li>
+        <li><a href="#setup">Създаване на Yesod проект</a></li>
+        <li><a href="#hello-yesod">Първи пример с Yesod</a></li>
+        <li><a href="#routing">Маршрутизация с Yesod</a></li>
+        <li><a href="#handlers">Функции обработващи заявките в Yesod</a></li>
+        <li><a href="#shakespeare">Шекспирови шаблони, Хамлет, Касий, Луций и Юлий</a></li>
+        <li><a href="#forms">Форми в Yesod</a></li>
+        <li><a href="#mvc">MVC с Yesod</a></li>
+        <li><a href="#persistence">Yesod и бази данни</a></li>
+        <li><a href="#sessions">Потребителски сесии</a></li>
+        <li><a href="#summary">Обобщение и примерен проект</a></li>
+        <li><a href="#resources">Използвани материали</a></li>
+        <li><a href="#about">За мен</a></li>
+      </ul>
+    </nav>
+
+    <article id="what-is-yesod?">
+      <h2>Какво е Yesod?</h2>
+      <p><em>Yesod</em> е уеб фреймуърк за разработване на уеб приложения.
+        Както всички останали фреймуърци, той си има предимства и недостатъци.
+        Някои от тях са:
+      </p>
+      <ul id="yesod-pros">
+        <li>в повечето случаи, ако приложението се компилира, то ще работи</li>
+        <li>получаваме висока производителност</li>
+        <li>избягваме до голяма степен <a href="https://en.wikipedia.org/wiki/Boilerplate_(text)">boilerplate</a> кода,
+          който е нужен за голяма част от уеб разработването</li>
+        <li>използваме <em>Haskell</em></li>
+      </ul>
+      <ul id="yesod-cons">
+        <li>трябва да знаем малко(повече) <em>Haskell</em></li>
+      </ul>
+      <p>Обаче, преди да обясним по-подробно откъде точно идват предимствата и недостатъците на Yesod,
+        ще покажем как да setup-нем самия фреймуърк и ще дадем някои примери, които всеки имащ желание
+        ще може да изпробва.
+      </p>
+    </article>
+
+    <article id="setup">
+      <h2>Създаване на Yesod проект</h2>
+      <p>В случая ще подкарваме проект с помощта на <em>Stack</em>, тъй като този начин не изисква познания за Haskell еко-системата.
+        <a href="http://docs.haskellstack.org/en/stable/">Stack</a> е мулти-платформен инструмент за разработване,
+        който се грижи за инсталацията на всички елементи нужни за пускане на даден <em>Haskell</em>-ски проект
+        (в това число и компилатор), както и за build-ването и тестването му.
+      </p>
+      <p>Тъй като има много различни платформи, погледнете
+        <a href="http://docs.haskellstack.org/en/stable/README.html#how-to-install">този линк</a>
+        за инсталацията на <em>Stack</em>, а ако се сблъскате с някакъв проблем или имате въпроси се свържете <a href="#about">с мен</a>.
+      </p>
+      <p>След като имаме работещ <em>Stack</em>, изпълняваме следните команди:
+      </p>
+      <pre><code class="bash">stack new examples simple # Създаваме нов проект в директорията examples
+cd examples               # Променяме текущата директория да е examples
+stack setup               # Сваляме/Инсталираме нужната версия на <a id="ghc" href="https://www.haskell.org/ghc/">GHC (The Glorious/Glasgow Haskell Compiler)</a></code></pre>
+      <p>В момента папката <em>examples</em> съдържа папката <em>src</em> в която ще са файловете съдържащи нашия код, <em>Setup.hs</em> е нужен
+        за компилиране на проекта чрез някои <em>Haskell</em> инструменти, а <em>examples.cabal</em> и <em>stack.yaml</em> са конфигурационни файлове.
+      </p>
+      <p>В <em>examples.cabal</em> са записани всички детайли относно компилирането на проекта, като ползвани библиотеки,
+        входна точка на приложението и прочее. <em>stack.yaml</em> носи конфигурационни детайли за самия <em>Stack</em>. 
+      </p>
+      <p>За да подкарате примерния проект, копирайте <a href="src/examples.cabal">examples.cabal</a> и <a href="src/stack.yaml">stack.yaml</a>,
+        в току-що създадената директория <em>examples</em>, a <a href="src/yesodfm.hs">yesodfm.hs</a> и <a href="src/hello.hs">hello.hs</a> преместете в
+        <em>examples/src</em>.
+      </p>
+      <p>Командата <code>stack build</code> сваля и инсталира всички нужни библиотеки(като всичко това се случва в средата на <em>Stack</em>,
+        така че може да не се притеснявате, че ще омажете глобалната такава). Изпълнението на командата отнема около 15ина минути,
+        а след завършването ѝ в текущата директория ще имаме работещия <em>Yesod</em> проект.
+      </p>
+    </article>
+
+    <article id="hello-yesod">
+      <h2>Първи пример с Yesod</h2>
+      <p>Ако сте следвали стъпките от миналата секция, сега ще се намирате в директорията <em>examples</em>
+        съдържаща примерния <em>Yesod</em> проект.
+        Всъщност, двата файла, които копирахте в <em>src</em>, са две различни приложения. Да разгледаме първо съдържанието на <em>hello.hs</em>.
+      </p>
+      <pre><code class="haskell">{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
+{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE TypeFamilies      #-}
+
+import Yesod
+
+
+data HelloWorld = HelloWorld
+
+mkYesod "HelloWorld" [parseRoutes|
+  / HomeR GET
+|]
+
+instance Yesod HelloWorld
+
+getHomeR :: Handler Html
+getHomeR = defaultLayout [whamlet|Hello World!|]
+
+main :: IO ()
+main = warp 3000 HelloWorld</code></pre>
+      <p>Първите четири реда служат за разширяване на езика <em>Haskell</em>. След малко ще разберем защо ни трябват
+        някои от тези разширения.
+      </p>
+      <p>Следва един ред започващ с ключовата дума <code>import</code>, която може би сте виждали и в <em>Java</em>.
+        Аналогът в <em>С/C++</em> пък е директивата <code>#include</code>. Както вече се досещате, с този ред указваме,
+        че в нашия код ще използваме библиотеката <em>Yesod</em>.
+      </p>
+      <p>С ключовата дума <code>data</code> създаваме новия тип <code>HelloWorld</code>, а няколко реда по-надолу,
+        с <code>instance Yesod HelloWorld</code> казваме, че нашият тип <code>HelloWorld</code> е
+        фундаменталният тип на нашето <em>Yesod</em> приложение(впрочем, оттук идва и името на фреймуърка - yesod(на иврит: יסוד)
+        означава фундамент).
+      </p>
+      <p>Най-интересни са трите реда започващи с функцията <code>mkYesod</code>. Тъкмо тук ни трябват и разширенията
+        <code>TemplateHaskell</code> и <code>QuasiQuotes</code>.
+      </p>
+      <p><em>Template Haskell</em> ни позволява <a href="https://en.wikipedia.org/wiki/Metaprogramming">метапрограмиране</a>.
+        Всичко, което е заградено в <code>[|</code> и <code>|]</code> e метаезик, който после бива преобразуван до Haskell
+        с помощта на тъй наречените <em>Quasiquoters</em>. Те пък са функциите намиращи се в <code>[|</code>.
+        Първият <em>quasiquoter</em>, който срещаме тук, е <code>parseRoutes</code>. Метаезикът, който използваме след него, ще
+        опишем подробно по-късно, но сега ще обясним накратко какво се случва в конкретния случай.
+        <code>/</code> е всъщност адресът на нашия уеб сървър(например, за
+        <code>https://moodle.openfmi.net/login/index.php</code>, това ще сочи към адреса
+        <code>https://moodle.openfmi.net/</code>), <code>HomeR</code> е името, с което ще го наричаме в нашия
+        Haskell код, a <code>GET</code> е методът с който ще можем да го достъпваме.
+      </p>
+      <p>Трите реда започваха с функцията <code>mkYesod</code>. Тя приема името на нашия тип, който ще е в
+        основата на нашето приложение и <em>Template Haskell</em> участък, чрез който да създаде таблицата с адресите на сайта.
+      </p>
+      <p>Следва дефиницията на функцията <code>getHomeR</code>. С нея определяме какво да се случи когато получим
+        <code>GET</code> заявка на адреса <code>HomeR</code>. Първият ред е сигнатурата на функцията, която няма нужда
+        да разбираме в момента, затова ще я прескочим. <em>Quasiquoter</em>-ът <code>whamlet</code> преобразува метаезикът,
+        който му дадем до <em>widget</em>, което също ще обясним по-късно. <code>defaultLayout</code> пък, взима този widget 
+        и връща валиден <em>html</em>, в случая, съдържащ текста <span>Hello World!</span>.
+      </p>
+      <p>Последните два реда са дефиницията на функцията <code>main</code>, входната точка на нашата програма.
+        Warp e малко, но много бързо сървърче написано на <em>Haskell</em> специално за <em>Yesod</em>. Съответно с
+        функцията със същото име пускаме нашето приложение <code>HelloWorld</code> на порт 3000 през
+        <code>warp</code>.
+      </p>
+      <p>Остана да разберем и как да пуснем цялото проектче да върви. Командата <code>stack exec hello</code>
+        стартира проекта с име <em>hello</em>. Без да се изненадаме, може да отворим в браузер <code>localhost:3000/</code>
+        и да видим, че там се е появил текстът <em>Hello World!</em>.
+        (Приложението се спира с клавишната комбинация <strong>Ctrl+C</strong> в терминала)
+      </p>
+    </article>
+
+    <article id="routing">
+      <h2>Маршрутизация с Yesod</h2>
+      <p>Ако сте погледнали <a href="#hello-yesod">въвеждащото примерче за Yesod</a>, вече имате бегла представа за
+        това как се случва маршрутизацията тук. Сега ще ѝ обърнем малко повече внимание.
+      </p>
+      <p>Да речем, че искаме да направим приложение, имащо следното съдържание:
+      </p>
+      <ul id="functionality">
+        <li>начална страничка</li>
+        <li>login и signup страничка(като естествено, ще искаме да може и да се logout-нем.</li>
+        <li>страничка с любимите ни песни и техните автори, като искаме да може да кликнем върху
+          някоя и да получим повече информация(от кой албум е и коя година е издадена, издадена).
+          Също така ще е хубаво да има възможност за добавяне на нови песни.</li>
+      </ul>
+      За такава страничка, следната маршрутна таблица би ни свършила работа:
+      <pre><code class="haskell">/       HomeR    GET
+/login  LoginR   GET POST
+/logout LogoutR  GET
+/signup SignupR  GET POST
+/song   SongR:
+  /#UserId     NewSongR  POST
+  /#Text/#Text SongInfoR GET
+/songs  SongsR   GET</code></pre>
+      Нещата изведнъж станаха много сложни? Всъщност не.
+      <p>Вече знаем, че първата колона е пътят, който използваме, например, в браузера. От пети ред, обаче,
+        нещата са по-различни от преди. Всъщност, разликата е, че просто изписваме йерархичните пътища.
+        Тоест, горното е съкратен вариант на:
+      </p>
+      <pre><code class="haskell">/song/#UserId      NewSongR  GET
+/song/#Text/#Text/ SongInfoR POST</code></pre>
+      <p>
+        Полетата <code>#Text</code> и <code>#UserId</code> пък указват, че на дадените места в адреса може да има само
+        стойности от конкретния тип(типа <code>UserId</code> ще обясним когато стигнем до базата данни).
+        По този начин <em>Yesod</em> намалява нужните валидации, които би трябвало да извършим.
+      </p>
+      <p>Втората колонка съдържа имената, които ползваме за да работим с тези адреси. Това е много удобно, защото в
+        последствие може да променим както поискаме пътищата, без да трябва да променяме надолу и нашия код.
+        Другото хубаво нещо е, че <em>Haskell</em> проверява дали нямаме счупени пътища и се оплаква, ако има такива.
+        Така, подобни грешки биват хващани по време на компилация.
+        Главното латинско <em>R</em> накрая не е задължително, но е конвенция, за да се разбира, че става въпрос за
+        ресурс(<strong>R</strong>esource).
+      </p>
+      <p>Третата колонка се състои от методите с които може да достъпваме адресите. Когато имаме няколко метода за
+        един и същ адрес трябва да се напишат на един ред, защото ако напишем следното,
+        <em>Yesod</em> ще се оплаче, че даваме името <code>LoginR</code> на две различни неща:
+      </p>
+      <pre><code class="haskell">/login LoginR GET
+/login LoginR POST</code></pre>
+    </article>
+
+    <article id="handlers">
+      <h2>Функции обработващи заявките в Yesod</h2>
+      <p>След като се получи заявка за някакъв адрес тя трябва да бъде обработена по някакъв начин.
+        В <em>Yesod</em> това става с тъй наречените <em>handler</em>-и.
+        Те са функции, чието име започва с метода на заявката последвано от името, което използваме за адреса.
+      </p>
+      <p>За следната маршрутна таблица, функциите, които трябва да дефинираме са <code>getHomeR</code>, <code>getLoginR</code>,
+        <code>postLoginR</code>, <code>getLogoutR</code>, <code>getSignUpR</code>, <code>postSignupR</code>,
+        <code>postNewSongR</code>, <code>getSongInfoR</code> и <code>getSongsR</code>.
+        Важно е да знаем, че ако пропуснем някоя от тях, <em>Haskell</em> ще се оплаче, което ни гарантира липсата на счупени връзки.
+        От тях, предпоследните две приемат аргументи, като <code>postNewSongR</code> приема една стойност от тип
+        <code>UserId</code>, а <code>getSongInfoR</code> приема две стойности от тип <code>Text</code>.
+      </p>
+      <pre><code class="haskell">/       HomeR    GET
+/login  LoginR   GET POST
+/logout LogoutR  GET
+/signup SignupR  GET POST
+/song   SongR:
+  /#UserId    NewSongR  POST
+  /#Text/#Text SongInfoR GET
+/songs  SongsR   GET</code></pre>
+      <p>В случая тук, всичките функции ще "връщат" <em>html</em>, защото ще работим с уеб страница, но е важно да се отбележи,
+        че те могат да връщат абсолютно всякакъв тип, от просто някакво число до <em>json</em>.
+      </p>
+    </article>
+
+    <article id="shakespeare">
+      <h2>Шекспирови шаблони, Хамлет, Касий, Луций и Юлий</h2>
+      <p><em>Yesod</em> използва Шекспирови шаблони за създаването на <em>html</em>, <em>css</em> и <em>javascript</em>. Идеята на цялата фамилия е
+        да се намали намесата на скрития език, да се валидират
+        <a href="https://en.wikipedia.org/wiki/String_interpolation">интерполираните</a> линкове и да се гарантира,
+        че след компилация, генерираният код е
+        <a href="https://en.wikipedia.org/wiki/Well-formed_element">well-formed</a>.
+      </p>
+      <section>
+        <h3>Хамлет</h3>
+        <p><em>Hamlet</em> е шаблонният език за <em>html</em>. Следното е примерна страничка написана на <em>Хамлет</em>:
+        </p>
+        <pre><code class="haskell">$doctype 5 
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Yesod FM
+    &lt;body&gt;
+      &lt;header&gt;
+        &lt;nav&gt;
+          &lt;ul #menu&gt;
+            &lt;li&gt;
+              &lt;a href=@{HomeR}&gt;homepage
+            &lt;li&gt;
+              &lt;a href=@{SongsR}&gt;your songs
+            $if logged
+              &lt;li&gt;
+                &lt;a href=@{LogoutR}&gt;log out(#{uname})
+      &lt;div&gt;^{content}</code></pre>
+        <p>Както виждате, в Хамлет изпускаме затварящите тагове, а с индентация показваме областта им.
+          Има няколко начина за интерполация, както и условни конструкции(<code>if..else</code>) и конструкции за цикъл(<code>forall</code>).
+          С <code>#{}</code> интерполираме стойности, с <code>@{}</code> интерполираме адреси, а с <code>^{}</code>
+          може да вграждаме други шаблони. Благодарение на адресната интерполация имаме улеснена работа с линковете,
+          а чрез интерполирането на стойностите избягваме
+          <a href="https://en.wikipedia.org/wiki/Cross-site_scripting">XSS атаки</a>.
+        </p>
+      </section>
+      <section>
+        <h3>Касий и Луций</h3>
+        <p><em>Cassius</em> и <em>Lucius</em> са шаблонните езици за <em>css</em>. Всъщност, единствената разлика помежду им е, че в
+          <em>Луций</em> се използват <code>{</code> и <code>}</code>, а за <em>Касий</em> е предпочетена индентацията.
+          Това са примерни стилове на <em>Касий</em>:
+        </p>
+        <pre><code class="haskell">ul#song-list
+  list-style-type: none</code></pre>
+        <p>И тук е възможно да интерполираме, с цел преизползването на вече написан код.
+        </p>
+      </section>
+      <section>
+        <h3>Юлий</h3>
+        <p><em>Julius</em> пък е шаблонният език за <em>javascript</em>. На практика, той си е <em>javascript</em>, като отново има възможност за
+          интерполация, както в предните три езика.
+        </p>
+      </section>
+      <p>Остана само да поясним как се ползват тези четири езика.
+      </p>
+      <p>Единият начин е чрез <em>quasiquotation</em>, като ние вече се запознахме с <em>quasiquoter</em>-а <code>whamlet</code>. Както
+        може би се досещате, има подобни такива и за останалите езици.
+      </p>
+      <p>Другият начин, който е и предпочитаният за реални проекти, е с външни файлове.
+        Например, записваме нашия <em>Хамлет</em> код във файла <em>index.hamlet</em>. След това можем да го включим в нашия код с израза
+        <code>$(hamletFile "index.hamlet")</code>. 
+      </p>
+    </article>
+
+    <article id="forms">
+      <h2>Форми в Yesod</h2>
+      <p>Тъй като голяма част от уеб приложенията включват регистрация/логин, а най-лесният начин да се
+        имплементират такива е чрез форми, ще се запознаем с малка част от работата с форми в <em>Yesod</em>(<strong>disclaimer</strong>:
+        това ще изисква малко повече <em>Haskell</em> познания).
+      </p>
+      <p>Първото нещо, което трябва да направим, е да укажем на какъв език да бъдат съобщенията на формите.
+        Ако искаме да правим нещо по-сложно ще са ни нужни малко повече знания за <em>Haskell</em>, но със следните два реда
+        казваме да се използва преводачът по подразбиране, тоест, ще има съобщения само на английски
+        (<code>YesodFM</code> трябва да бъде заместен с фундаменталния тип на вашето приложение):
+      </p>
+      <pre><code class="haskell">instance RenderMessage YesodFM FormMessage where
+  renderMessage _ _ = defaultFormMessage</code></pre>
+      <p>За да създадем форма, обаче, Yesod изисква от нас да създадем нов тип, който да имплементира данните
+        от формата. Например, ако искаме формата да съдържа задължителните полета <code>username</code> и <code>password</code>,
+        ще ни трябва типът <code>User</code>:
+      </p>
+      <pre><code class="haskell">data User = User
+  { username :: Text
+  , password :: Text
+  }</code></pre>
+      <p>Накратко - указваме, че нашият тип има две полета съдържащи <code>Text</code>
+        (Ако този код ви затруднява, прочетете тази секция за
+        <a href="https://wiki.haskell.org/Type">типовете</a> в <em>Haskell</em>)
+      </p>
+      <p>След като сме направили нашия тип, декларираме нашата форма:</p>
+      <pre><code class="haskell">userForm = renderDivs $ User
+  &lt;$&gt; areq textField     "username" Nothing
+  &lt;*&gt; areq passwordField "password" Nothing</code></pre>
+      <p>
+        Това, което ни интересува от горния участък е, че указваме типа <code>User</code>, който ще ползваме,
+        <code>areq</code> конструира задължителни полета, <code>textField</code> и <code>passwordField</code>
+        са типовете на тези полета, следват имената им, а накрая е стойността по подразбиране за която е избран
+        типът <code>Maybe</code>, тъй като такава стойност може и да липсва.
+        <span><a href="https://wiki.haskell.org/Maybe">Maybe</a> е нещо много любимо на Haskeller-ите, което означава, че може да
+          имаме или да нямаме стойност. Например, възможните стойности на <code>Maybe Int</code> са <code>Nothing</code>,
+          показващо липсата на стойност или <code>Just 42</code>, където на мястото на <code>42</code>, разбира се, може да бъде коя да
+          е друга целочислена стойност.
+        </span>
+      </p>
+      <p>Но това, което имаме дотук са само полетата на формата. <em>Yesod</em> не включва самата форма, както и бутона за
+        предаване на информацията. Това трябва да го направим сами, например, в някой handler:
+      </p>
+      <pre><code class="haskell">getLoginR = do
+  (widget, enctype) &lt;- generateFormPost userForm
+  defaultLayout [whamlet|
+    &lt;p&gt;Login to your account
+      &lt;form method=post action=@{LoginR} enctype=#{enctype}&gt;
+        ^{widget}
+        &lt;button&gt;login
+  |]</code></pre>
+      <p><code>do</code> е синтаксис на <em>Haskell</em>, който ни позволява изреждането на изрази в императивен стил. С втория ред записваме в
+        <code>widget</code> и <code>enctype</code> генерираната част от формата и
+        <a href="https://developer.mozilla.org/en/docs/Web/HTML/Element/form#attr-enctype">
+        типът на кодиране</a>, a oстаналият код е шаблон на <em>Хамлет</em>.
+      </p>
+      <p>След това, в друг handler ще обработим получената информация от формата:
+      </p>
+      <pre><code class="haskell">postLoginR = do
+  ((result, _), _) &lt;- runFormPost userForm
+  case result of
+    FormSuccess (User username _) -&gt; do
+      defaultLayout [whamlet|
+        &lt;p&gt;You have successfully logged in as #{username}
+        &lt;p&gt;Now you can go to your #
+          &lt;a href=@{SongsR}&gt;songs
+          page
+      |]
+    _ -&gt; defaultLayout [whamlet|
+      &lt;p&gt;Login failed!
+    |]</code></pre>
+      <p>
+        Вторият ред записва в <code>result</code> получените от формата данни. Операторът <code>case .. of</code>
+        в <em>Haskell</em> е подобен на <code>switch</code> конструкцията от някои по-познати езици. Тук, ако формата е била
+        валидно попълнена, известяваме потребителя, че вече е в системата, в противен случай извеждаме подходящо
+        съобщение.
+      </p>
+      <p>Това не е всичко, което <em>Yesod</em> ни предоставя за работа с форми. Но тъй като за да продължим са нужни доста
+        повече <em>Haskell</em> умения, оставям <a href="http://www.yesodweb.com/book/forms">тази връзка</a> на интересуващите се.
+      </p>
+    </article>
+
+    <article id="mvc">
+      <h2>MVC с Yesod</h2>
+      <p><a href="https://en.wikipedia.org/wiki/Model-view-controller">Model-View-Controller</a>(накратко <em>MVC</em>)
+        е един от най-известните шаблони за дизайн на архитектура, що се отнася до уеб приложения.
+        В различните езици, той бива реализиран по различни начини. В <em>Rails</em> имаме централизирана функция, обработваща
+        маршрутите на база на регулярни изрази. В <em>PHP</em> пък имаме изпращане(dispatch) спрямо имената на файловете.
+        Подходът използван в <em>Yesod</em> е по-близък до този при <em>Rails</em>. Самото маршрутизиране следва
+        <a href="https://en.wikipedia.org/wiki/Front_Controller_pattern">front controller</a> шаблона, съответно
+        нашият view-controller се оказват handler-ите. Самите view-та са Шекспировите шаблони.
+      </p>
+      <p>Малкият примерен проект <em>yesodfm</em>, който върви с този реферат е реализиран именно с <em>MVC</em>, тъй че при достатъчно желание
+        там може да бъде разгледан подходът с <em>Yesod</em>.
+      </p>
+    </article>
+
+    <article id="persistence">
+      <h2>Yesod и бази данни</h2>
+      <p>Голяма част от уеб приложенията имат нужда да записват някаква информация, независимо дали ще е във файл
+        или ще се използва база данни. Естествено, разработчиците на Yesod са предвидили тази необходимост и са ни
+        предоставили лесен начин да свържем нашето приложение с
+        <a href="https://en.wikipedia.org/wiki/Persistence_(computer_science)">persistent</a> слоя.
+      </p>
+      <p>Тук ще разгледаме случая в който отзад седи <em>SQLite</em>, но почти толкова лесно се случват и нещата с
+        <em>PostgreSQL</em>, <em>MySQL</em>, <em>MongoDB</em> и <em>Redis</em>.
+      </p>
+      <p>Нека нашето приложение да има нужда от две таблици. Едната ще съдържа потребителите и паролата им,
+        другата ще съдържа песни, имената на авторите им и албумите от които са, както и годината на издаване. За
+        да може да показваме подходящо песните в последствие, ще добавим и идентификатор на потребителя, добавил песента.
+        Тази схема описваме така:
+      </p>
+      <pre><code class="haskell">share [mkPersist sqlSettings, mkMigrate "migrateAll"]
+  [persistLowerCase|
+    User
+      username Text
+      password Text
+      Username username
+    Song
+      album  Text
+      author Text
+      title  Text
+      year   Int 
+      userId UserId Maybe
+      Name author title
+|]</code></pre>
+      <p>Първият ред зарежда <em>sql</em>-настройките на Yesod, а от втория нататък срещаме отново вече познатия ни
+        <em>Template Haskell</em>. <code>persistLowerCase</code> е <em>quasiquoter</em>, създаващ схема с дадените имена,
+        като преди това всички главни букви преминават в малки. <code>User</code> и <code>Song</code> са имената на двете
+        таблици. След това изреждаме всичките колони в таблиците, като отдясно изписваме техния тип(тук <code>Maybe</code>
+        се записва отдясно). С главни букви са <a href ="https://en.wikipedia.org/wiki/Unique_key">уникалните ключове</a>
+        за таблицата. Интересен е редът <code>userId UserId Maybe</code> указващ наличието на
+        <a href="http://www.1keydata.com/sql/sql-foreign-key.html">foreign key</a>.
+      </p>
+      <p>Приятна новина е, че освен за създаването на таблицата, <em>Yesod</em> се грижи и за създаването на нужните типове.
+        Тоест, за <code>User</code> горният код ще генерира за нас нещо подобно на следното:
+      </p>
+      <pre><code class="haskell">data User = User
+  { UserUsername :: Text
+  , UserPassword :: Text
+  }</code></pre>
+      <p>Казвам нещо подобно, защото <code>UserUsername</code> и <code>UserPassword</code>, започвайки с главни букви не
+        могат да бъдат имена на полета.
+      </p>
+      <p>Има още две неща, които трябва да направим, за да ползваме базата данни в приложението си.
+        Едното е да определим поведението на функцията <code>runDB</code>, която ни позволява да извърваме транзакции
+        в handler функциите с които обработвахме получените заявки. Последното е да стартираме базата данни заедно с нашето
+        приложение, но тъй като и двете операции са абсолютно неразбираеми за незапознатите с <em>Haskell</em>, ще ги прескоча,
+        а за ентусиастите - може да погледнете кода към реферата!
+      </p>
+      <p>Остана да покажем как да правим самите заявки към базата. Това е примерният код, който регистрира потребител и вкарва
+        неговото име и парола в базата:
+      </p>
+        <pre><code class="haskell">postSignupR = do
+  ((result, _), _) &lt;- runFormPost userForm
+  case result of
+    FormSuccess (User username password) -&gt; do
+      user &lt;- runDB (getBy (Username username))
+      case user of
+        Just _ -&gt; defaultLayout [whamlet|
+          &lt;p&gt;That username has already been taken!
+        |]
+        Nothing -&gt; do
+          runDB (insert (User username password))
+          defaultLayout [whamlet|
+            &lt;p&gt;You have successfully registered as #{username}
+            &lt;p&gt;Now go on and add some #
+              &lt;a href=@{SongsR}&gt;songs
+              !
+          |]
+    _ -&gt; defaultLayout [whamlet|
+      &lt;p&gt;Registration failed!
+    |]
+</code></pre>
+      <p>Нищо ново освен редовете включващи <code>runDB</code>. <code>runDB</code> приема <em>sql</em> действие,
+        каквито са <code>getBy</code> и <code>insert</code>. <code>getBy</code> очаква уникален ключ и ни връща
+        запис от таблицата, ако такъв съществува(затова и срещаме отново <code>Maybe</code>), а <code>insert</code>
+        приема просто стойност за добавяне в таблицата.
+      </p>
+    </article>
+
+    <article id="sessions">
+      <h2>Потребителски сесии</h2>
+      <p>Освен всичко друго, <em>Yesod</em> ни предоставя и лесен начин за поддържане на
+        <a href="https://en.wikipedia.org/wiki/Login_session">потребителски сесии</a>.
+        Текущата сесия се представя като двойки ключове и стойности.
+      </p>
+      <p>Имаме няколко функции за работа със сесии. Едната е <code>setSession</code>. Тя приема стойността и името ѝ,
+        които бихме искали да пазим в сесията.
+      </p>
+      <pre><code class="haskell">postLoginR = do
+  ((result, _), _) &lt;- runFormPost userForm
+  case result of
+    FormSuccess (User username password) -&gt; do
+      -- ..
+      -- код вписващ потребителя в базата и правещ допълнителни проверки
+      -- ..
+            setSession "user" username
+            defaultLayout [whamlet|
+              &lt;p&gt;You have successfully logged in as #{username}
+              &lt;p&gt;Now you can go to your #
+                &lt;a href=@{SongsR}&gt;songs
+                page
+            |]
+    _ -&gt; defaultLayout [whamlet|
+      &lt;p&gt;Login failed!
+    |]</code></pre>
+      <p>На излизане пък ще извикваме функцията <code>deleteSession</code>:
+      </p>
+      <pre><code class="haskell">getLogoutR = do
+  deleteSession "user"
+  defaultLayout [whamlet|
+    &lt;p&gt;You have successfully logged out. We'll miss you!
+  |]</code></pre>
+      <p>Ако искаме да проверим дали потребител е записан в момента ще използваме <code>lookupSession</code>.
+      </p>
+      <pre><code class="haskell">user &lt;- lookupSession "user"
+let (logged, uname) =
+      case user of
+        Just u  -&gt; (True, u)
+        Nothing -&gt; (False, "")
+</code></pre>
+      <p>
+        Тя приема търсен ключ и ни връща <code>Maybe</code> стойност, за да отразява случаите в който няма
+        записана стойност за него.
+      </p>
+    </article>
+
+    <article id="summary">
+      <h2>Обобщение и примерен проект</h2>
+      <p>Надявам се , че с всичко написано дотук съм успял да покажа, че <em>Yesod</em> е фреймуърк с който се работи
+        лесно и приятно и освен това получаваме като продукт надеждно и качествено уеб приложение.
+        То е защитено от <em>XSS</em> атаки и трудно се чупи(ако сме успели да го компилираме) благодарение на типовата системa
+        на <em>Haskell</em>. Освен това лесно се постига модулярност, позволяваща да променяме отделните компоненти на приложението
+        без да засягаме всичко останало.
+        Допълнително, почти видяхме как се връзва база данни и разбрахме, че поддържането на сесии е повече от лесно.
+      </p>
+      <p>Ако ви е интересно, можете да разгледате примерния проект вървящ към реферата. Постарал съм се в него да
+        покажа всички неща, които бяха споменати, както и някои допълнителни.
+      </p>
+      <h3>Инструкции за подкарване на проекта</h3>
+      <ul id="guide">
+        <li>Създайте <a href="#setup">Yesod проект</a></li>
+        <li>Копирайте в <em>examples/src</em> папката файловете <a href="src/stack.yaml">stack.yaml</a>,
+          <a href="src/examples.cabal">examples.cabal</a>, <a href="src/hello.hs">hello.hs</a> и
+          <a href="src/yesodfm.hs">yesodfm.hs</a></li>
+        <li>Стартирайте приложенията със <code>stack exec hello</code> или <code>stack exec yesodfm</code></li>
+        <li>Приложението е стартирано на адрес <code>localhost</code> на порт 3000, тоест може да го достъпите ако
+          напишете <code>localhost:3000</code> в браузера.</li>
+        <li>Сървърчето се спира с <strong>Ctrl+C</strong> в терминала, където е пуснато</li>
+      </ul>
+    </article>
+
+    <article id="resources">
+      <h2>Използвани материали</h2>
+      <ul id="links">
+        <li><a href="http://www.yesodweb.com/book-1.4">Yesod Web Framework Book - Version 1.4</a></li>
+        <li><a href="https://www.haskell.org">Haskell Language's website</a></li>
+        <li><a href="http://docs.haskellstack.org/en/stable/index.html">The Haskell Tool Stack's documentation</a></li>
+        <li>Следните връзки от <a href="https://en.wikipedia.org/">wikipedia</a>:
+          <ul id="wikipedia-links">
+            <li><a href="https://en.wikipedia.org/wiki/Boilerplate_(text)">boilerplate</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Metaprogramming">metaprogramming</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/String_interpolation">string interpolation</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Well-formed_element">well-formed element</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Cross-site_scripting">cross-site scripting</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Model-view-controller">mvc</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Front_Controller_pattern">front controller pattern</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Persistence_(computer_science)">persistence</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Unique_key">unique key</a></li>
+            <li><a href="https://en.wikipedia.org/wiki/Login_session">login session</a></li>
+          </ul>
+        </li>
+        <li><a href="http://www.1keydata.com/sql/sql-foreign-key.html">Тази връзка за foreign key</a></li>
+      </ul>
+    </article>
+    <article id="about">
+        <h2>За мен</h2>
+        <ul>
+          <li>Даниел Тасков</li>
+          <li>80910</li>
+          <li>Компютърни науки - 4 курс</li>
+          <li>За връзка
+            <ul>
+              <li><a href="mailto:daniel.taskoff@gmail.com">поща</a></li>
+              <li><a href="https://www.facebook.com/dee.taskoff">facebook</a></li>
+            </ul>
+          </li>
+        </ul>
+    </article>
+
+    <footer>
+      <em>Документът е валидиран с <a href="https://validator.w3.org/">w3c's Markup Validation Service
+        <img src="img/w3c-logo.png" alt="w3c's logo" /></a>
+      </em>
+    </footer>
+
+    <script src="highlight.pack.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+  </body>
+</html>
